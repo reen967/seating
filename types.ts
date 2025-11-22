@@ -45,4 +45,8 @@ export interface AttendanceRecord {
   presentStudentIds: string[];
 }
 
+export interface AppSettings {
+  googleSheetUrl?: string;
+}
+
 export type ViewMode = 'dashboard' | 'admin-lt' | 'admin-assign' | 'facilitator' | 'report';

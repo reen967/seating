@@ -1,4 +1,4 @@
-import { ClassGroup, Student, LectureTheatre, SeatingPlan, AttendanceRecord, SeatNode } from '../types';
+import { ClassGroup, Student, LectureTheatre, SeatingPlan, AttendanceRecord, SeatNode, AppSettings } from '../types';
 
 // Keys
 const KEYS = {
@@ -7,6 +7,7 @@ const KEYS = {
   LTS: 'sa_lts',
   PLANS: 'sa_plans',
   RECORDS: 'sa_records',
+  SETTINGS: 'sa_settings',
 };
 
 // Seed Data
@@ -117,6 +118,10 @@ export const storageService = {
     set(KEYS.RECORDS, [...list, record]);
   },
   
+  // Settings
+  getSettings: () => get<AppSettings>(KEYS.SETTINGS, {}),
+  saveSettings: (settings: AppSettings) => set(KEYS.SETTINGS, settings),
+
   // Clear Data (Debug)
   reset: () => localStorage.clear(),
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ViewMode, AttendanceRecord, ClassGroup, LectureTheatre } from './types';
+import { ViewMode, AttendanceRecord, ClassGroup, LectureTheatre, AppSettings } from './types';
 import { LtBuilder } from './components/Admin/LtBuilder';
 import { SeatingAssigner } from './components/Admin/SeatingAssigner';
 import { AttendanceView } from './components/Facilitator/AttendanceView';
@@ -14,10 +14,19 @@ const App: React.FC = () => {
   const [classes, setClasses] = useState<ClassGroup[]>([]);
   const [lts, setLts] = useState<LectureTheatre[]>([]);
 
+  // Settings Modal State
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState<AppSettings>({});
+  const [settingsUrl, setSettingsUrl] = useState('');
+
   const refreshData = () => {
     setRecords(storageService.getRecords());
     setClasses(storageService.getClasses());
     setLts(storageService.getLTs());
+    
+    const s = storageService.getSettings();
+    setSettings(s);
+    setSettingsUrl(s.googleSheetUrl || '');
   };
 
   useEffect(() => {
@@ -28,14 +37,31 @@ const App: React.FC = () => {
     sheetsService.generateCSV(records, classes, lts);
   };
 
+  const saveSettings = () => {
+    const newSettings = { ...settings, googleSheetUrl: settingsUrl };
+    storageService.saveSettings(newSettings);
+    setSettings(newSettings);
+    setShowSettings(false);
+    alert('Integration settings saved!');
+  };
+
   const renderDashboard = () => (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6 relative">
       <header className="flex justify-between items-center mb-10">
         <div>
           <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Smart Attendance</h1>
           <p className="text-slate-500">Classroom management & tracking system</p>
         </div>
-        <div className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">v1.0.0 (Mock Data)</div>
+        <div className="flex items-center gap-4">
+          <button 
+             onClick={() => setShowSettings(true)}
+             className="text-slate-500 hover:text-blue-600 transition-colors"
+             title="Settings"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          </button>
+          <div className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">v1.1.0</div>
+        </div>
       </header>
 
       <div className="grid md:grid-cols-2 gap-8">
@@ -43,7 +69,7 @@ const App: React.FC = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-indigo-100 p-2 rounded-lg">
-              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
             </div>
             <h2 className="text-xl font-bold text-slate-800">Admin Configuration</h2>
           </div>
@@ -86,9 +112,12 @@ const App: React.FC = () => {
       <div className="mt-10 bg-white rounded-xl border p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-gray-700">Recent Sync History</h3>
-          <button onClick={handleExport} className="text-sm text-blue-600 hover:underline font-medium">
-            Download CSV
-          </button>
+          <div className="flex gap-2">
+            {settings.googleSheetUrl && <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center">● Live Sync Active</span>}
+            <button onClick={handleExport} className="text-sm text-blue-600 hover:underline font-medium">
+                Download CSV
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-600">
@@ -132,6 +161,38 @@ const App: React.FC = () => {
       {view === 'admin-lt' && <LtBuilder onBack={() => setView('dashboard')} />}
       {view === 'admin-assign' && <SeatingAssigner onBack={() => setView('dashboard')} />}
       {view === 'facilitator' && <AttendanceView onBack={() => setView('dashboard')} />}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+              <div className="p-6 border-b">
+                 <h3 className="text-xl font-bold text-gray-800">Settings</h3>
+                 <p className="text-sm text-gray-500 mt-1">Configure external integrations</p>
+              </div>
+              <div className="p-6 space-y-4">
+                 <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Google Sheet Webhook URL</label>
+                    <input 
+                      type="text" 
+                      value={settingsUrl}
+                      onChange={(e) => setSettingsUrl(e.target.value)}
+                      placeholder="https://script.google.com/macros/s/.../exec"
+                      className="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                    <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                      To enable automatic syncing, deploy a Google Apps Script as a Web App (Execute as: Me, Access: Anyone) and paste the URL here.
+                      The app will POST JSON data to this URL on every submission.
+                    </p>
+                 </div>
+              </div>
+              <div className="p-4 bg-gray-50 border-t flex justify-end gap-3">
+                 <button onClick={() => setShowSettings(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg font-medium">Cancel</button>
+                 <button onClick={saveSettings} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700">Save Settings</button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };
